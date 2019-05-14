@@ -6,18 +6,9 @@
   <arg name="model" default="iiwa14"/>
   <arg name="debug" default="false"/>
 
-  <group ns="$(arg robot_name)" unless="$(arg debug)">
-    <node name="gripper_command" pkg="gripper_command" type="gripper_command" respawn="false" output="screen">
-      <remap from="output" to="/robotiq_s_model_gripper_node/output" />
-      <remap from="input" to="/robotiq_s_model_gripper_node/input" />      
-    </node>
-  </group>
-
-  <group ns="$(arg robot_name)" if="$(arg debug)">
-    <node name="gripper_command" pkg="gripper_command" type="gripper_command" respawn="false" output="screen" launch-prefix="xterm -e gdb --args">
-      <remap from="output" to="/robotiq_s_model_gripper_node/output" />
-      <remap from="input" to="/robotiq_s_model_gripper_node/input" />      
-    </node>
-  </group>
+  <node name="gripper_command" pkg="gripper_command" type="gripper_command" respawn="false" output="screen">
+    <remap from="output" to="/robotiq_s_model_gripper_node/output" />
+    <remap from="input" to="/robotiq_s_model_gripper_node/input" />      
+  </node>
 
 </launch>

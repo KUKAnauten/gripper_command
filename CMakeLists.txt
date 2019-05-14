@@ -9,10 +9,10 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   control_msgs
-  iimoveit
-  iiwa_description
-  iiwa_moveit
-  iiwa_msgs
+  # iimoveit
+  # iiwa_description
+  # iiwa_moveit
+  # iiwa_msgs
   moveit_msgs
   moveit_ros_planning_interface
   moveit_visual_tools  
