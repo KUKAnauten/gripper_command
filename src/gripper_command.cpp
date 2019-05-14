@@ -34,7 +34,6 @@
 
 /* Author: Niklas Schaefer */
 
-// #include <iimoveit/robot_interface.h>
 #include <robotiq_s_model_control/s_model_msg_client.h>
 #include <robotiq_s_model_control/s_model_api.h>
 #include <std_msgs/Float64.h>
@@ -44,28 +43,28 @@ using namespace robotiq;
 
 namespace gripper_command {
 
-// TODO : Remove RobotInterface. Just needed for testing (waitForApproval())
-// class GripperCommand : public iimoveit::RobotInterface {
 class GripperCommand {  
   private:
     boost::shared_ptr<robotiq_s_model_control::SModelMsgClient> sModelMsgClient_;
     ros::Subscriber gripper_command_sub_;
     ros::NodeHandle* node_handle_;
+    int toggle_previous_;
 
-  // void gripperCommandCallback(const std_msgs::Float64::ConstPtr& msg) {
-  //   double command = msg->data;
 
-  //   if(int(command) != previous_command_) {
-  //     if(int(command) == 0) {
-  //       openGripper();
-  //     }
-  //     else if(int(command) == 1) {
-  //       closeGripper();
-  //     }
-  //   }
+  void toggleCallback(const std_msgs::Float64::ConstPtr& msg) {
+    double command = msg->data;
 
-  //   previous_command_ = int(command);
-  // }
+    if(int(command) != toggle_previous_) {
+      if(int(command) == 0) {
+        openGripper();
+      }
+      else if(int(command) == 1) {
+        closeGripper();
+      }
+    }
+
+    toggle_previous_ = int(command);
+  }
 
   void positionCallback(const std_msgs::UInt8::ConstPtr& msg)
   {
@@ -77,17 +76,11 @@ class GripperCommand {
   public:
     robotiq_s_model_control::SModelAPI gripper;
 
-    // GripperCommand(ros::NodeHandle* node_handle, const std::string& planning_group, const std::string& base_frame)
-    //     : RobotInterface(node_handle, planning_group, base_frame), 
-    //       sModelMsgClient_(new robotiq_s_model_control::SModelMsgClient(*node_handle)),
-    //       gripper(sModelMsgClient_),
-    //       previous_command_(0) {
-    // }
-
     GripperCommand(ros::NodeHandle* node_handle)
         : sModelMsgClient_(new robotiq_s_model_control::SModelMsgClient(*node_handle)),
           gripper(sModelMsgClient_),
-          node_handle_(node_handle) {
+          node_handle_(node_handle),
+          toggle_previous_(0) {
     }
 
     void registerSubscriber(const std::string& topic) {
@@ -135,11 +128,7 @@ int main(int argc, char **argv)
   ros::AsyncSpinner spinner(1);
   spinner.start();
 
-  // gripper_command::GripperCommand gripper_commander(&node_handle, "manipulator", "world");
   gripper_command::GripperCommand gripper_commander(&node_handle);
-  // iimoveit::RobotInterface ri_object(&node_handle, "manipulator", "world");
-
-  // gripper_commander.waitForApproval();
 
   gripper_commander.gripper.setInitialization(INIT_ACTIVATION);
   gripper_commander.gripper.setGraspingMode(GRASP_PINCH);
@@ -148,20 +137,14 @@ int main(int argc, char **argv)
   gripper_commander.gripper.setRawVelocity(255);
   gripper_commander.gripper.setRawForce(50);
 
-  // gripper_commander.waitForApproval();
-  // ROS_INFO("Closing gripper!");
   gripper_commander.gripper.setRawPosition(0);
   gripper_commander.gripper.write();
   gripper_commander.waitForGripper();
 
-  // gripper_commander.waitForApproval();
-  
-  // gripper_commander.openGripper();
-
   gripper_commander.registerSubscriber(std::string("gripper_in_position"));
-  // ROS_INFO_NAMED("gripper_commander", "Subscribed to gripper command!");
+  ROS_INFO_NAMED("gripper_commander", "Subscribed to gripper_in_position!");
 
-  ros::Rate rate(10);
+  ros::Rate rate(100);
   while(ros::ok()) {
     rate.sleep();
   }
